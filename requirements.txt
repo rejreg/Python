@@ -1,4 +1,6 @@
 aiohttp
 python-decouple
-https://github.com/New-dev0/Telethon/archive/diamond.zip
-telethon
+Telethon
+html_telegraph_poster
+psutil
+tgcrypto
