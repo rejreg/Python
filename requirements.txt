@@ -1,6 +1,6 @@
 aiohttp
 python-decouple
-Telethon
+telethon
 html_telegraph_poster
 psutil
 tgcrypto
