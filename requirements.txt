@@ -1,6 +1,10 @@
 aiohttp
 python-decouple
-telethon
-html_telegraph_poster
 psutil
+pymediainfo
 tgcrypto
+Telethon
+html-telegraph-poster
+lxml[html_clean]
+pyaesni
+aiofiles
