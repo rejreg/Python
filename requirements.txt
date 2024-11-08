@@ -3,7 +3,5 @@ python-decouple
 psutil
 tgcrypto
 Telethon
-html-telegraph-poster
-lxml[html_clean]
 pyaesni
 aiofiles
