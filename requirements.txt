@@ -2,3 +2,4 @@ aiohttp
 python-decouple
 tgcrypto
 Telethon
+psutil
