@@ -3,4 +3,3 @@ python-decouple
 psutil
 tgcrypto
 Telethon
-pyaesni
