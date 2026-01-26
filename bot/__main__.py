@@ -1,27 +1,18 @@
-#    This file is part of the Compressor distribution.
-#    Copyright (c) 2021 
-#
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, version 3.
-#
-#    This program is distributed in the hope that it will be useful, but
-#    WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-#    General Public License for more details.
-#
-# License can be found in
-# <https://github.com/> .
-
-
+import os
+import re
+import asyncio
+from aiohttp import web
+from pathlib import Path
+from telethon import Button, events
 from . import *
+from .config import *
+from .worker import *
 from .devtools import *
+from .FastTelethon import *
+from datetime import datetime as dt
+import time
 
 LOGS.info("Starting...")
-
-
-######## Connect ########
-
 
 try:
     bot.start(bot_token=BOT_TOKEN)
@@ -31,64 +22,134 @@ except Exception as er:
 
 ####### GENERAL CMDS ########
 
-
-@bot.on(events.NewMessage(pattern="/start"))
+@bot.on(events.NewMessage(pattern=r"/start"))
 async def _(e):
+    if str(e.sender_id) not in OWNER and e.sender_id != DEV:
+        return await e.reply("Join @OngoingAnimess")
     await start(e)
 
 
-@bot.on(events.NewMessage(pattern="/ping"))
+@bot.on(events.NewMessage(pattern=r"/setcode"))
 async def _(e):
+    if str(e.sender_id) not in OWNER and e.sender_id != DEV:
+        return await e.reply("Join @OngoingAnimess")
+    await coding(e)
+
+
+@bot.on(events.NewMessage(pattern=r"/getcode"))
+async def _(e):
+    if str(e.sender_id) not in OWNER and e.sender_id != DEV:
+        return await e.reply("Join @OngoingAnimess")
+    await getcode(e)
+
+
+@bot.on(events.NewMessage(pattern=r"/showthumb"))
+async def _(e):
+    if str(e.sender_id) not in OWNER and e.sender_id != DEV:
+        return await e.reply("Join @OngoingAnimess")
+    await getthumb(e)
+
+
+@bot.on(events.NewMessage(pattern=r"/logs"))
+async def _(e):
+    if str(e.sender_id) not in OWNER and e.sender_id != DEV:
+        return await e.reply("Join @OngoingAnimess")
+    await getlogs(e)
+
+
+@bot.on(events.NewMessage(pattern=r"/cmds"))
+async def _(e):
+    if str(e.sender_id) not in OWNER and e.sender_id != DEV:
+        return await e.reply("Join @OngoingAnimess")
+    await zylern(e)
+
+
+@bot.on(events.NewMessage(pattern=r"/ping"))
+async def _(e):
+    if str(e.sender_id) not in OWNER and e.sender_id != DEV:
+        return await e.reply("Join @OngoingAnimess")
     await up(e)
 
 
-@bot.on(events.NewMessage(pattern="/help"))
+@bot.on(events.NewMessage(pattern=r"/sysinfo"))
 async def _(e):
-    await help(e)
+    if str(e.sender_id) not in OWNER and e.sender_id != DEV:
+        return await e.reply("Join @OngoingAnimess")
+    await sysinfo(e)
+
+
+@bot.on(events.NewMessage(pattern=r"/leech"))
+async def _(e):
+    if str(e.sender_id) not in OWNER and e.sender_id != DEV:
+        return await e.reply("Join @OngoingAnimess")
+    await dl_link(e)
+
+
+@bot.on(events.NewMessage(pattern=r"/help"))
+async def _(e):
+    if str(e.sender_id) not in OWNER and e.sender_id != DEV:
+        return await e.reply("Join @OngoingAnimess")
+    await ihelp(e)
+
+
+@bot.on(events.NewMessage(pattern=r"/renew"))
+async def _(e):
+    if str(e.sender_id) not in OWNER and e.sender_id != DEV:
+        return await e.reply("Join @OngoingAnimess")
+    await renew(e)
+
+
+@bot.on(events.NewMessage(pattern=r"/clear"))
+async def _(e):
+    if str(e.sender_id) not in OWNER and e.sender_id != DEV:
+        return await e.reply("Join @OngoingAnimess")
+    await clearqueue(e)
+
+
+@bot.on(events.NewMessage(pattern=r"/speed"))
+async def _(e):
+    if str(e.sender_id) not in OWNER and e.sender_id != DEV:
+        return await e.reply("Join @OngoingAnimess")
+    await test(e)
+
+
+########## Direct ###########
+
+@bot.on(events.NewMessage(pattern=r"/eval"))
+async def _(e):
+    await eval(e)
+
+@bot.on(events.NewMessage(pattern=r"/bash"))
+async def _(e):
+    await bash(e)
 
 
 ######## Callbacks #########
-
 
 @bot.on(events.callbackquery.CallbackQuery(data=re.compile(b"stats(.*)")))
 async def _(e):
     await stats(e)
 
-
 @bot.on(events.callbackquery.CallbackQuery(data=re.compile(b"skip(.*)")))
 async def _(e):
     await skip(e)
 
-
-@bot.on(events.callbackquery.CallbackQuery(data=re.compile(b"back(.*)")))
+@bot.on(events.callbackquery.CallbackQuery(data=re.compile("help")))
 async def _(e):
-    await back(e)
-
-
-@bot.on(events.callbackquery.CallbackQuery(data=re.compile("ihelp")))
-async def _(e):
-    await ihelp(e)
-
-
-@bot.on(events.callbackquery.CallbackQuery(data=re.compile("beck")))
-async def _(e):
-    await beck(e)
-
-
-########## Direct ###########
-
-
-@bot.on(events.NewMessage(pattern="/eval"))
-async def _(e):
-    await eval(e)
-
-
-@bot.on(events.NewMessage(pattern="/bash"))
-async def _(e):
-    await bash(e)
+    await help(e)
 
 
 ########## AUTO ###########
+
+@bot.on(events.NewMessage(incoming=True))
+async def _(event):
+    if str(event.sender_id) not in OWNER and event.sender_id != DEV:
+        return await event.reply("Join @OngoingAnimess")
+    if not event.photo:
+        return
+    os.system("rm thumb.jpg")
+    await event.client.download_media(event.media, file="/bot/thumb.jpg")
+    await event.reply("**Thumbnail Saved Successfully.**")
 
 
 @bot.on(events.NewMessage(incoming=True))
@@ -97,47 +158,58 @@ async def _(e):
 
 
 async def something():
-    for i in range(9999999999999999999999999):  # ik very weird way 😅😅
+    for i in itertools.count():
         try:
             if not WORKING and QUEUE:
                 user = int(OWNER.split()[0])
-                e = await bot.send_message(user, "Downloading Queue Files")
-                dl, file = QUEUE[list(QUEUE.keys())[0]]
+                e = await bot.send_message(user, "**📥 Downloading Queue Files...**")
                 s = dt.now()
-                tt = time.time()
-                dl = "downloads/" + dl
-                with open(dl, "wb") as f:
-                    ok = await download_file(
-                        client=bot,
-                        location=file,
-                        out=f,
-                        progress_callback=lambda d, t: asyncio.get_event_loop().create_task(
-                            progress(
-                                d,
-                                t,
-                                e,
-                                tt,
-                                "Downloading",
+                try:
+                    if isinstance(QUEUE[list(QUEUE.keys())[0]], str):
+                        dl = await fast_download(
+                            e, list(QUEUE.keys())[0], QUEUE[list(QUEUE.keys())[0]]
+                        )
+                    else:
+                        dl, file = QUEUE[list(QUEUE.keys())[0]]
+                        tt = time.time()
+                        dl = "downloads/" + dl
+                        with open(dl, "wb") as f:
+                            ok = await download_file(
+                                client=bot,
+                                location=file,
+                                out=f,
+                                progress_callback=lambda d, t: asyncio.get_event_loop().create_task(
+                                    progress(
+                                        d,
+                                        t,
+                                        e,
+                                        tt,
+                                        f"**📥 Downloading**\n__{dl.replace(f'downloads/', '')}__",
+                                    )
+                                ),
                             )
-                        ),
-                    )
+                except Exception as r:
+                    LOGS.info(r)
+                    WORKING.clear()
+                    QUEUE.pop(list(QUEUE.keys())[0])
                 es = dt.now()
                 kk = dl.split("/")[-1]
                 aa = kk.split(".")[-1]
+                newFile = dl.replace(f"downloads/", "").replace(f"_", " ")
                 rr = "encode"
-                bb = kk.replace(f".{aa}", "Encode.mkv")
+                bb = kk.replace(f".{aa}", ".mkv")
                 out = f"{rr}/{bb}"
                 dtime = ts(int((es - s).seconds) * 1000)
                 hehe = f"{out};{dl};{list(QUEUE.keys())[0]}"
                 wah = code(hehe)
                 nn = await e.edit(
-                    "`Compressing..`",
+                    "**🗜 Compressing...**",
                     buttons=[
                         [Button.inline("STATS", data=f"stats{wah}")],
-                        [Button.inline("CANCEL PROCESS", data=f"skip{wah}")],
+                        [Button.inline("CANCEL", data=f"skip{wah}")],
                     ],
                 )
-                cmd = FFMPEG.format(dl, out)
+                cmd = f"""ffmpeg -i "{dl}" {ffmpegcode[0]} "{out}" -y"""
                 process = await asyncio.create_subprocess_shell(
                     cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
                 )
@@ -145,7 +217,7 @@ async def something():
                 er = stderr.decode()
                 try:
                     if er:
-                        await e.edit(str(er) + "\n\n**ERROR** Contact")
+                        await e.edit(str(er) + "\n\n**ERROR**")
                         QUEUE.pop(list(QUEUE.keys())[0])
                         os.remove(dl)
                         os.remove(out)
@@ -155,19 +227,16 @@ async def something():
                 ees = dt.now()
                 ttt = time.time()
                 await nn.delete()
-                nnn = await e.client.send_message(e.chat_id, "`Uploading...`")
+                nnn = await e.client.send_message(e.chat_id, "**📤 Uploading...**")
                 with open(out, "rb") as f:
                     ok = await upload_file(
                         client=e.client,
                         file=f,
                         name=out,
                         progress_callback=lambda d, t: asyncio.get_event_loop().create_task(
-                            progress(d, t, nnn, ttt, "uploading..")
+                            progress(d, t, nnn, ttt, f"**📤 Uploading**\n__{out.replace(f'encode/', '')}__")
                         ),
                     )
-                ds = await e.client.send_file(
-                    e.chat_id, file=ok, force_document=True
-                )
                 await nnn.delete()
                 org = int(Path(dl).stat().st_size)
                 com = int(Path(out).stat().st_size)
@@ -179,9 +248,9 @@ async def something():
                 xxx = ts(int((eees - ees).seconds) * 1000)
                 a1 = await info(dl, e)
                 a2 = await info(out, e)
-                dk = await ds.reply(
-                    f"Original Size : {hbs(org)}\nCompressed Size : {hbs(com)}\nCompressed Percentage : {per}\n\nMediainfo: [Before]({a1})//[After]({a2})\n\nDownloaded in {x}\nCompressed in {xx}\nUploaded in {xxx}",
-                    link_preview=False,
+                dk = f"<b>File Name:</b> {newFile}\n\n<b>Original File Size:</b> {hbs(org)}\n<b>Encoded File Size:</b> {hbs(com)}\n<b>Encoded Percentage:</b> {per}\n\n<b>Get Mediainfo Here:</b> <a href='{a1}'>Before</a>/<a href='{a2}'>After</a>\n\n<i>Downloaded in {x}\nEncoded in {xx}\nUploaded in {xxx}</i>"
+                ds = await e.client.send_file(
+                    e.chat_id, file=ok, force_document=True, caption=dk, link_preview=False, parse_mode="html"
                 )
                 QUEUE.pop(list(QUEUE.keys())[0])
                 os.remove(dl)
@@ -192,9 +261,23 @@ async def something():
             LOGS.info(err)
 
 
-########### Start ############
+# Web server to avoid Render's port error
+async def handle(request):
+    return web.Response(text="Bot is running.")
 
-LOGS.info("Bot Has Started.")
+app = web.Application()
+app.router.add_get("/", handle)
+port = int(os.environ.get("PORT", 5000))
+web_runner = web.AppRunner(app)
+
+async def start_web_server():
+    await web_runner.setup()
+    site = web.TCPSite(web_runner, '0.0.0.0', port)
+    await site.start()
+
+# Start the bot and web server together
+LOGS.info("Bot has started.")
 with bot:
+    bot.loop.run_until_complete(start_web_server())
     bot.loop.run_until_complete(something())
     bot.loop.run_forever()
